@@ -9,7 +9,7 @@ wss.on("connection", (socket) => {
     console.log("User Connected");
 
     socket.on("message", (data) => {
-        console.log("Message sent from browser: ", data.toString());
+        // console.log("Message sent from browser: ", data.toString());
         try{
             const message = JSON.parse(data.toString()) as socketRequest<socketpayload>;
             
@@ -19,10 +19,12 @@ wss.on("connection", (socket) => {
                 console.log("user joined room: ", reqRoomId);
             }
             if(message.type == "message"){
+                console.log("message reached");
                 const reqMessage = (<sendMessage>message.payload).message;
-                const userRoomId = allsockets.find(t => t.socket === socket);
-                if(userRoomId !== undefined){
-                    allsockets.filter(t => t.roomId === userRoomId.roomId).forEach(t => t.socket.send(reqMessage));
+                const userRoom = allsockets.find(t => t.socket === socket);
+                if(userRoom !== undefined){
+                    let clientSockets = allsockets.filter(t => t.roomId === userRoom.roomId && t.socket !== socket);
+                    clientSockets.forEach(t => t.socket.send(reqMessage));
                 }
             }
         }
